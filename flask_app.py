@@ -44,9 +44,9 @@ def test_route():
 @app.route('/testsms', methods=['POST'])
 def test_sms():
     mobile_number = [config.my_mobile]
-    payload = {"to":mobile_number,"body":"Someone just accessed /testroute","from":"sender_id:" + config.syn_sender_id}
+    payload = {"to":mobile_number,"body":"Someone just POSTed to /testroute","from":"sender_id:" + config.syn_sender_id}
     response = requests.post(syn_url, json=payload, headers=syn_headers)
-    return 'test sms sent'
+    return 'test sms sent with status code '+str(response.status_code), 201
 
 @app.route('/smstest/twilio', methods=['POST'])
 def smstest_twilio():
@@ -72,14 +72,14 @@ def eightball_twilio():
 @app.route('/eightball/syniverse', methods=['POST'])
 def eightball_syniverse():
     json_data = request.get_json()
-    if json_data: #skip if no JSON
+    if json_data: #skip if no JSON - Python will raise an exception in the following code otherwise
         event_data = json_data['event']
         mobile_number = [event_data['fld-val-list']['from_address']]
-        payload = {"to":mobile_number,"body":eightball_response(),"from":"channel:" + config.syn_channel_id}
+        payload = {"to":mobile_number,"body":eightball_response(),"from":"sender_id:" + config.syn_sender_id}
         response = requests.post(syn_url, json=payload, headers=syn_headers)
         return 'sms response sent with status code '+str(response.status_code), 201
     else:
         mobile_number = [config.my_mobile]
-        payload = {"to":mobile_number,"body":"you POSTed without any JSON","from":"channel:" + config.syn_channel_id}
+        payload = {"to":mobile_number,"body":"you POSTed without any JSON","from":"sender_id:" + config.syn_sender_id}
         response = requests.post(syn_url, json=payload, headers=syn_headers)
         return 'someone POSTed without any JSON to /eightball/syniverse', 201
