@@ -41,10 +41,10 @@ def hello_world():
 def test_route():
     return 'you POSTed to /testroute'
 
-@app.route('/testsms')
+@app.route('/testsms', methods=['POST'])
 def test_sms():
     mobile_number = [config.my_mobile]
-    payload = {"to":mobile_number,"body":"Someone just accessed /testroute","from":"channel:" + config.syn_channel_id}
+    payload = {"to":mobile_number,"body":"Someone just accessed /testroute","from":"sender_id:" + config.syn_sender_id}
     response = requests.post(syn_url, json=payload, headers=syn_headers)
     return 'test sms sent'
 
