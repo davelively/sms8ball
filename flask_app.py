@@ -75,7 +75,6 @@ def eightball_twilio():
 def eightball_syniverse():
     json_data = request.get_json()
     if json_data: #skip if no JSON - Python will raise an exception in the following code otherwise
-#        event_data = json_data['event']
         mobile_number = json_data['event']['fld-val-list']['from_address']
         response_text = eightball_response()
         response_status = send_sms_syniverse(config.syn_sender_id, mobile_number, response_text)
