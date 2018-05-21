@@ -4,9 +4,6 @@ import random
 import requests
 import config #api keys and other sensitive data stored here
 
-syn_url = 'https://api.syniverse.com/scg-external-api/api/v1/messaging/message_requests'
-syn_headers = {'Authorization': 'Bearer ' + config.syn_access_token, 'Content-Type': 'application/json'}
-
 def eightball_response():
     responses = [
         'As I see it, yes',
@@ -31,6 +28,13 @@ def eightball_response():
         'Very doubtful']
     return random.choice(responses)
 
+def send_sms_syniverse(sender_id, to_number, body_text):
+    url = 'https://api.syniverse.com/scg-external-api/api/v1/messaging/message_requests'
+    headers = {'Authorization': 'Bearer ' + config.syn_access_token, 'Content-Type': 'application/json'}
+    payload = {"to":[to_number],"body":body_text,"from":"sender_id:" + sender_id}
+    response = requests.post(url, json=payload, headers=headers)
+    return response.status_code
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -43,10 +47,8 @@ def test_route():
 
 @app.route('/testsms', methods=['POST'])
 def test_sms():
-    mobile_number = [config.my_mobile]
-    payload = {"to":mobile_number,"body":"Someone just POSTed to /testroute","from":"sender_id:" + config.syn_sender_id}
-    response = requests.post(syn_url, json=payload, headers=syn_headers)
-    return 'test sms sent with status code '+str(response.status_code), 201
+    response_status = send_sms_syniverse(config.syn_sender_id, config.my_mobile, "Someone just POSTed to /testroute")
+    return 'test sms sent with status code '+str(response_status), 201
 
 @app.route('/smstest/twilio', methods=['POST'])
 def smstest_twilio():
@@ -74,12 +76,10 @@ def eightball_syniverse():
     json_data = request.get_json()
     if json_data: #skip if no JSON - Python will raise an exception in the following code otherwise
         event_data = json_data['event']
-        mobile_number = [event_data['fld-val-list']['from_address']]
-        payload = {"to":mobile_number,"body":eightball_response(),"from":"sender_id:" + config.syn_sender_id}
-        response = requests.post(syn_url, json=payload, headers=syn_headers)
-        return 'sms response sent with status code '+str(response.status_code), 201
+        mobile_number = event_data['fld-val-list']['from_address']
+        response_text = eightball_response()
+        response_status = send_sms_syniverse(config.syn_sender_id, mobile_number, response_text)
+        return 'sms response sent with status code '+str(response_status), 201
     else:
-        mobile_number = [config.my_mobile]
-        payload = {"to":mobile_number,"body":"you POSTed without any JSON","from":"sender_id:" + config.syn_sender_id}
-        response = requests.post(syn_url, json=payload, headers=syn_headers)
+        response_status = send_sms_syniverse(config.syn_sender_id, config.my_mobile, "you POSTed without any JSON")
         return 'someone POSTed without any JSON to /eightball/syniverse', 201
