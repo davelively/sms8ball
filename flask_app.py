@@ -41,10 +41,6 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello from my Flask app!'
 
-@app.route('/testroute', methods=['POST'])
-def test_route():
-    return 'you POSTed to /testroute'
-
 @app.route('/testsms', methods=['POST'])
 def test_sms():
     response_status = send_sms_syniverse(config.syn_sender_id, config.my_mobile, "Someone just POSTed to /testroute")
