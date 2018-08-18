@@ -39,26 +39,12 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def hello_world():
-    return 'Hello from my Flask app!'
-
-@app.route('/testsms', methods=['POST'])
-def test_sms():
-    response_status = send_sms_syniverse(config.syn_sender_id, config.my_mobile, "Someone just POSTed to /testroute")
-    return 'test sms sent with status code '+str(response_status), 201
-
-@app.route('/smstest/twilio', methods=['POST'])
-def smstest_twilio():
-    number = request.form['From']
-    message_body = request.form['Body']
-
-    resp = twiml.Response()
-    resp.message('Hello from pythonanywhere {}, you asked: {}'.format(number, message_body))
-    return str(resp)
+    return """You've reached my SMS Magic Eight Ball.  Go to https://github.com/davelively/sms8ball to learn more."""
 
 @app.route('/smsfallback/twilio', methods=['POST'])
 def smsfallback_twilio():
     resp = twiml.Response()
-    resp.message("I didn't quite catch that - can you repeat your question?")
+    resp.message("I took too long thinking about the answer and forgot your question - can you ask again?")
     return str(resp)
 
 @app.route('/eightball/twilio', methods=['POST'])
@@ -76,5 +62,4 @@ def eightball_syniverse():
         response_status = send_sms_syniverse(config.syn_sender_id, mobile_number, response_text)
         return 'sms response sent with status code '+str(response_status), 201
     else:
-        response_status = send_sms_syniverse(config.syn_sender_id, config.my_mobile, "you POSTed without any JSON")
-        return 'someone POSTed without any JSON to /eightball/syniverse', 201
+        return 'No sms sent.  Invalid POST without any JSON to /eightball/syniverse', 201
